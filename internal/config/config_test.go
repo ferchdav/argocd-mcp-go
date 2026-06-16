@@ -11,7 +11,6 @@ import (
 )
 
 func TestLoadConfig(t *testing.T) {
-	// Create a temporary config file
 	tempDir := t.TempDir()
 	configPath := filepath.Join(tempDir, "config.yaml")
 
@@ -27,26 +26,17 @@ server:
 logging:
   level: "info"
 `
-	err := os.WriteFile(configPath, []byte(configContent), 0644)
+	err := os.WriteFile(configPath, []byte(configContent), 0o644)
 	require.NoError(t, err)
 
-	// Create logger for test
 	logger := logrus.New()
 	logger.SetLevel(logrus.DebugLevel)
 
 	t.Run("load valid config", func(t *testing.T) {
-		// Change to temp dir so config can be found
-		originalDir, err := os.Getwd()
-		require.NoError(t, err)
-		defer os.Chdir(originalDir)
-		os.Chdir(tempDir)
+		// Override HOME to prevent loading the user's real global config.
+		t.Setenv("HOME", t.TempDir())
 
-		// Override HOME to prevent loading user config
-		originalHome := os.Getenv("HOME")
-		os.Setenv("HOME", tempDir)
-		defer os.Setenv("HOME", originalHome)
-
-		cfg, err := LoadConfig(logger)
+		cfg, err := LoadConfig(logger, configPath)
 		require.NoError(t, err)
 		assert.Equal(t, "argocd.example.com", cfg.ArgoCD.Server)
 		assert.Equal(t, "admin", cfg.ArgoCD.Username)
@@ -56,25 +46,16 @@ logging:
 	})
 
 	t.Run("defaults are applied", func(t *testing.T) {
-		// Minimal config - only server specified
 		minConfigContent := `
 argocd:
   server: "argocd.example.com"
 `
-		err := os.WriteFile(configPath, []byte(minConfigContent), 0644)
-		require.NoError(t, err)
+		require.NoError(t, os.WriteFile(configPath, []byte(minConfigContent), 0o644))
 
-		originalDir, err := os.Getwd()
-		require.NoError(t, err)
-		defer os.Chdir(originalDir)
-		os.Chdir(tempDir)
+		// Override HOME to prevent loading the user's real global config.
+		t.Setenv("HOME", t.TempDir())
 
-		// Override HOME to prevent loading user config
-		originalHome := os.Getenv("HOME")
-		os.Setenv("HOME", tempDir)
-		defer os.Setenv("HOME", originalHome)
-
-		cfg, err := LoadConfig(logger)
+		cfg, err := LoadConfig(logger, configPath)
 		require.NoError(t, err)
 		assert.Equal(t, "info", cfg.Logging.Level)
 		assert.Equal(t, "stdio", cfg.Server.MCPEndpoint)
@@ -84,23 +65,14 @@ argocd:
 func TestLoadConfig_DefaultValues(t *testing.T) {
 	logger := logrus.New()
 
-	// Use a temp dir without any config file to trigger all defaults
-	tempDir := t.TempDir()
+	// Override HOME to a fresh temp dir with no config files so all
+	// defaults are exercised and the user's real global config does not
+	// leak in.
+	t.Setenv("HOME", t.TempDir())
 
-	originalDir, err := os.Getwd()
-	require.NoError(t, err)
-	defer os.Chdir(originalDir)
-	os.Chdir(tempDir)
-
-	// Override HOME to prevent loading any user config
-	originalHome := os.Getenv("HOME")
-	os.Setenv("HOME", tempDir)
-	defer os.Setenv("HOME", originalHome)
-
-	cfg, err := LoadConfig(logger)
+	cfg, err := LoadConfig(logger, "")
 	require.NoError(t, err)
 
-	// Verify all defaults are applied (since no config file exists)
 	assert.Equal(t, "localhost:8080", cfg.ArgoCD.Server)
 	assert.False(t, cfg.ArgoCD.Insecure)
 	assert.Equal(t, "stdio", cfg.Server.MCPEndpoint)
@@ -113,36 +85,22 @@ func TestLoadConfig_InvalidYAML(t *testing.T) {
 	tempDir := t.TempDir()
 	configPath := filepath.Join(tempDir, "config.yaml")
 
-	// Invalid YAML content
 	invalidContent := `
 argocd:
   server: "argocd.example.com"
   invalid_indent: this is invalid
     nested: broken
 `
-	err := os.WriteFile(configPath, []byte(invalidContent), 0644)
+	err := os.WriteFile(configPath, []byte(invalidContent), 0o644)
 	require.NoError(t, err)
 
 	logger := logrus.New()
+	t.Setenv("HOME", t.TempDir())
 
-	originalDir, err := os.Getwd()
-	require.NoError(t, err)
-	defer os.Chdir(originalDir)
-	os.Chdir(tempDir)
-
-	// Override HOME to prevent loading user config
-	originalHome := os.Getenv("HOME")
-	os.Setenv("HOME", tempDir)
-	defer os.Setenv("HOME", originalHome)
-
-	// LoadConfig should handle the error gracefully
-	// viper may not strictly fail on YAML parse errors in all versions
-	// but we can verify it doesn't panic
-	_, _ = LoadConfig(logger) // nolint:staticcheck // We only care that it doesn't panic
-	// The function may or may not return an error depending on viper version
-	// but it should not panic
+	// viper may or may not return an error for partially-invalid YAML, but
+	// LoadConfig must never panic regardless.
 	assert.NotPanics(t, func() {
-		_, _ = LoadConfig(logger)
+		_, _ = LoadConfig(logger, configPath)
 	})
 }
 
@@ -162,32 +120,48 @@ server:
 logging:
   level: "info"
 `
-	err := os.WriteFile(configPath, []byte(configContent), 0644)
+	err := os.WriteFile(configPath, []byte(configContent), 0o644)
 	require.NoError(t, err)
 
 	t.Run("env vars override config", func(t *testing.T) {
-		os.Setenv("ARGOCD_MCP_ARGOCD_USERNAME", "env-admin")
-		os.Setenv("ARGOCD_MCP_ARGOCD_PASSWORD", "env-secret")
-		defer func() {
-			os.Unsetenv("ARGOCD_MCP_ARGOCD_USERNAME")
-			os.Unsetenv("ARGOCD_MCP_ARGOCD_PASSWORD")
-		}()
+		t.Setenv("ARGOCD_MCP_ARGOCD_USERNAME", "env-admin")
+		t.Setenv("ARGOCD_MCP_ARGOCD_PASSWORD", "env-secret")
+		t.Setenv("HOME", t.TempDir())
 
 		logger := logrus.New()
 
-		originalDir, err := os.Getwd()
-		require.NoError(t, err)
-		defer os.Chdir(originalDir)
-		os.Chdir(tempDir)
-
-		// Override HOME to prevent loading user config
-		originalHome := os.Getenv("HOME")
-		os.Setenv("HOME", tempDir)
-		defer os.Setenv("HOME", originalHome)
-
-		cfg, err := LoadConfig(logger)
+		cfg, err := LoadConfig(logger, configPath)
 		require.NoError(t, err)
 		assert.Equal(t, "env-admin", cfg.ArgoCD.Username)
 		assert.Equal(t, "env-secret", cfg.ArgoCD.Password)
 	})
+}
+
+// TestLoadConfig_IgnoresCwdConfig verifies that a config.yaml in the
+// current working directory is NOT picked up by the default search path.
+// This prevents running argocd-mcp from inside another project (e.g. one
+// with its own config.yaml) from silently shadowing the global config in
+// ~/.config/argocd-mcp/config.yaml.
+func TestLoadConfig_IgnoresCwdConfig(t *testing.T) {
+	tmpHome := t.TempDir()
+	t.Setenv("HOME", tmpHome)
+
+	origDir, err := os.Getwd()
+	require.NoError(t, err)
+	t.Cleanup(func() { _ = os.Chdir(origDir) })
+
+	// A foreign config.yaml in cwd — must NOT be loaded.
+	cwd := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(cwd, "config.yaml"), []byte("argocd:\n  server: \"from-cwd\"\n"), 0o644))
+	require.NoError(t, os.Chdir(cwd))
+
+	// The global config that must win.
+	globalDir := filepath.Join(tmpHome, ".config", "argocd-mcp")
+	require.NoError(t, os.MkdirAll(globalDir, 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(globalDir, "config.yaml"), []byte("argocd:\n  server: \"from-global\"\n"), 0o644))
+
+	logger := logrus.New()
+	cfg, err := LoadConfig(logger, "")
+	require.NoError(t, err)
+	assert.Equal(t, "from-global", cfg.ArgoCD.Server, "server should come from the global config, not from cwd")
 }

@@ -40,7 +40,12 @@ type LoggingConfig struct {
 	Format string `mapstructure:"format"`
 }
 
-func LoadConfig(logger *logrus.Logger) (*Config, error) {
+// LoadConfig reads configuration from defaults, the optional configPath,
+// and environment variables. If configPath is empty, it searches
+// ~/.config/argocd-mcp. The current working directory is intentionally
+// NOT searched, so running argocd-mcp from inside another project does
+// not silently pick up a foreign config.yaml.
+func LoadConfig(logger *logrus.Logger, configPath string) (*Config, error) {
 	v := viper.New()
 
 	// Set defaults
@@ -58,10 +63,13 @@ func LoadConfig(logger *logrus.Logger) (*Config, error) {
 	v.AutomaticEnv()
 
 	// Config file support
-	v.AddConfigPath("$HOME/.config/argocd-mcp")
-	v.AddConfigPath(".")
-	v.SetConfigName("config")
-	v.SetConfigType("yaml")
+	if configPath != "" {
+		v.SetConfigFile(configPath)
+	} else {
+		v.AddConfigPath("$HOME/.config/argocd-mcp")
+		v.SetConfigName("config")
+		v.SetConfigType("yaml")
+	}
 
 	// Try to read config file
 	if err := v.ReadInConfig(); err != nil {

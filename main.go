@@ -71,7 +71,7 @@ The server communicates over stdio by default.`,
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cfg, err := config.LoadConfig(logger)
+			cfg, err := config.LoadConfig(logger, "")
 			if err != nil {
 				return fmt.Errorf("failed to load config: %w", err)
 			}
@@ -308,7 +308,7 @@ Or run interactively without flags:
 		Use:   "config show",
 		Short: "Show current configuration",
 		Run: func(cmd *cobra.Command, args []string) {
-			cfg, err := config.LoadConfig(logger)
+			cfg, err := config.LoadConfig(logger, "")
 			if err != nil {
 				fmt.Printf("Error loading config: %v\n", err)
 				return
@@ -352,7 +352,7 @@ Use --sso for Single Sign-On (OIDC) authentication:
 Use username/password for basic authentication:
   argocd-mcp auth login -u admin -p password`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cfg, err := config.LoadConfig(logger)
+			cfg, err := config.LoadConfig(logger, "")
 			if err != nil {
 				return fmt.Errorf("failed to load config: %w", err)
 			}
@@ -490,7 +490,7 @@ Use username/password for basic authentication:
 		Use:   "test",
 		Short: "Test connection to ArgoCD",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cfg, err := config.LoadConfig(logger)
+			cfg, err := config.LoadConfig(logger, "")
 			if err != nil {
 				return fmt.Errorf("failed to load config: %w", err)
 			}
@@ -593,7 +593,7 @@ Examples:
 			output, _ := cmd.Flags().GetString("output")
 
 			// Load config and create client
-			cfg, err := config.LoadConfig(logger)
+			cfg, err := config.LoadConfig(logger, "")
 			if err != nil {
 				return fmt.Errorf("failed to load config: %w", err)
 			}

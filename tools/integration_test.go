@@ -95,7 +95,7 @@ func TestReadOnlyToolsIntegration(t *testing.T) {
 	logger := logrus.New()
 	logger.SetLevel(logrus.ErrorLevel)
 
-	cfg, err := config.LoadConfig(logger)
+	cfg, err := config.LoadConfig(logger, "")
 	require.NoError(t, err, "Failed to load config")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -359,7 +359,7 @@ func TestParseEventsIntegration(t *testing.T) {
 	logger := logrus.New()
 	logger.SetLevel(logrus.ErrorLevel)
 
-	cfg, err := config.LoadConfig(logger)
+	cfg, err := config.LoadConfig(logger, "")
 	require.NoError(t, err, "Failed to load config")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
