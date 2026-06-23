@@ -12,7 +12,7 @@ import (
 
 	"github.com/argoproj/argo-cd/v3/pkg/apiclient/application"
 	"github.com/denysvitali/argocd-mcp/internal/auth"
-	"github.com/denysvitali/argocd-mcp/internal/client"
+	"github.com/ferchdav/argocd-mcp/internal/client"
 	"github.com/denysvitali/argocd-mcp/internal/config"
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/sirupsen/logrus"

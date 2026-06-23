@@ -15,13 +15,13 @@ A Model Context Protocol (MCP) server for ArgoCD, allowing you to interact with 
 ### Using go install
 
 ```bash
-go install github.com/denysvitali/argocd-mcp@main
+go install github.com/ferchdav/argocd-mcp-go@main
 ```
 
 ### From Source
 
 ```bash
-git clone https://github.com/denysvitali/argocd-mcp.git
+git clone https://github.com/ferchdav/argocd-mcp.git
 cd argocd-mcp
 go build -o argocd-mcp .
 ```
@@ -133,6 +133,25 @@ export ARGOCD_MCP_ARGOCD_TOKEN="your-token"
 | `create_cluster` | Add a cluster connection |
 | `update_cluster` | Update cluster credentials |
 | `delete_cluster` | Remove a cluster |
+
+
+## Newer advanced tools
+
+diagnose_application
+analyze_resource_efficiency
+get_logs
+get_resource_tree
+get_application_diff
+list_applicationsets
+get_applicationset
+preview_applicationset
+create_applicationset
+delete_applicationset
+refresh_application
+terminate_operation
+restart_pod
+delete_hook
+
 
 ## Using with Claude Code
 

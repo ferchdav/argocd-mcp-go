@@ -8,7 +8,7 @@ import (
 	"github.com/argoproj/argo-cd/v3/pkg/apiclient/application"
 	"github.com/argoproj/argo-cd/v3/pkg/apis/application/v1alpha1"
 	healthlib "github.com/argoproj/gitops-engine/pkg/health"
-	"github.com/denysvitali/argocd-mcp/internal/client"
+	"github.com/ferchdav/argocd-mcp/internal/client"
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
