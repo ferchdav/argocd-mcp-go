@@ -137,20 +137,22 @@ export ARGOCD_MCP_ARGOCD_TOKEN="your-token"
 
 ## Newer advanced tools
 
-diagnose_application
-analyze_resource_efficiency
-get_logs
-get_resource_tree
-get_application_diff
-list_applicationsets
-get_applicationset
-preview_applicationset
-create_applicationset
-delete_applicationset
-refresh_application
-terminate_operation
-restart_pod
-delete_hook
+| Tool | Description |
+|------|-------------|
+| `diagnose_application` |
+| `analyze_resource_efficiency` |
+| `get_logs` |
+| `get_resource_tree` |
+| `get_application_diff` |
+| `list_applicationsets` |
+| `get_applicationset` |
+| `preview_applicationset` |
+| `create_applicationset` |
+| `delete_applicationset` |
+| `refresh_application` |
+| `terminate_operation` |
+| `restart_pod` |
+| `delete_hook` |
 
 
 ## Using with Claude Code
