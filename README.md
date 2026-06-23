@@ -135,7 +135,7 @@ export ARGOCD_MCP_ARGOCD_TOKEN="your-token"
 | `delete_cluster` | Remove a cluster |
 
 
-## Newer advanced tools
+## Newer Advanced Tools
 
 | Tool | Description |
 |------|-------------|
@@ -153,6 +153,16 @@ export ARGOCD_MCP_ARGOCD_TOKEN="your-token"
 | `terminate_operation` |
 | `restart_pod` |
 | `delete_hook` |
+
+
+## Next Comming Tools
+
+| Tool | Description |
+|------|-------------|
+| `diagnose_application` |
+| `get_logs with previous container support` |
+| `analyze_resource_efficiency` |
+| `summarize_applications_by_project` |
 
 
 ## Using with Claude Code
