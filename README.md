@@ -28,7 +28,7 @@ go build -o argocd-mcp .
 
 ### From Release
 
-Download the appropriate binary from the [releases page](https://github.com/denysvitali/argocd-mcp/releases).
+Download the appropriate binary from the [releases page](https://github.com/ferchdav/argocd-mcp/releases).
 
 ## Configuration
 
