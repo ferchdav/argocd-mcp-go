@@ -11,7 +11,7 @@ import (
 	"github.com/argoproj/argo-cd/v3/pkg/apiclient/repository"
 	"github.com/argoproj/argo-cd/v3/pkg/apis/application/v1alpha1"
 	healthlib "github.com/argoproj/gitops-engine/pkg/health"
-	"github.com/ferchdav/argocd-mcp/internal/client"
+	"github.com/ferchdav/argocd-mcp-go/internal/client"
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"

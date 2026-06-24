@@ -11,9 +11,9 @@ import (
 	"time"
 
 	"github.com/argoproj/argo-cd/v3/pkg/apiclient/application"
-	"github.com/ferchdav/argocd-mcp/internal/auth"
-	"github.com/ferchdav/argocd-mcp/internal/client"
-	"github.com/ferchdav/argocd-mcp/internal/config"
+	"github.com/ferchdav/argocd-mcp-go/internal/auth"
+	"github.com/ferchdav/argocd-mcp-go/internal/client"
+	"github.com/ferchdav/argocd-mcp-go/internal/config"
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
