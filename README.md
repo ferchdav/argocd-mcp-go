@@ -159,8 +159,11 @@ export ARGOCD_MCP_ARGOCD_TOKEN="your-token"
 
 | Tool | Description |
 |------|-------------|
-| `get_logs with previous container support` |
 | `summarize_applications_by_project` |
+| `diagnose_project_applications` |
+| `pre_sync_check` |
+| `get_application_context` |
+| `suggest_remediation_plan` |
 
 
 ## Using with Claude Code
