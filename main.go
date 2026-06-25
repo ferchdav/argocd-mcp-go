@@ -76,6 +76,14 @@ The server communicates over stdio by default.`,
 				return fmt.Errorf("failed to load config: %w", err)
 			}
 
+			// This lets Kubernetes set:
+            // - name: ARGOCD_MCP_ENDPOINT
+            // value: "http"
+
+			if endpoint := os.Getenv("ARGOCD_MCP_ENDPOINT"); endpoint != "" {
+				cfg.Server.MCPEndpoint = endpoint
+			}
+
 			// Override from CLI flags if set
 			if grpcWeb, _ := cmd.Flags().GetBool("grpc-web"); grpcWeb {
 				cfg.ArgoCD.GRPCWeb = grpcWeb
@@ -731,22 +739,69 @@ Examples:
 	}
 }
 
-// startServer starts the MCP server with the given tools
+// // startServer starts the MCP server with the given tools
+// func startServer(_ context.Context, srv *server.MCPServer, tools []server.ServerTool, endpoint string, logger *logrus.Logger) error {
+// 	// Add all tools to the server
+// 	srv.AddTools(tools...)
+
+// 	logger.Infof("Starting MCP server with %d tools", len(tools))
+
+// 	switch endpoint {
+// 	case "stdio":
+// 		if err := server.ServeStdio(srv); err != nil {
+// 			return fmt.Errorf("server error: %w", err)
+// 		}
+// 	default:
+// 		logger.Infof("Unknown endpoint %s, using stdio", endpoint)
+// 		if err := server.ServeStdio(srv); err != nil {
+// 			return fmt.Errorf("server error: %w", err)
+// 		}
+// 	}
+
+// 	return nil
+// }
+
+// Go code change: use Streamable HTTP /mcp
+// startServer starts the MCP server with the given tools.
 func startServer(_ context.Context, srv *server.MCPServer, tools []server.ServerTool, endpoint string, logger *logrus.Logger) error {
-	// Add all tools to the server
+	// Add all tools to the server.
 	srv.AddTools(tools...)
 
 	logger.Infof("Starting MCP server with %d tools", len(tools))
 
 	switch endpoint {
 	case "stdio":
+		logger.Info("Starting MCP server over stdio")
 		if err := server.ServeStdio(srv); err != nil {
-			return fmt.Errorf("server error: %w", err)
+			return fmt.Errorf("stdio server error: %w", err)
 		}
+
+	case "http":
+		addr := os.Getenv("ARGOCD_MCP_HTTP_ADDR")
+		if addr == "" {
+			addr = ":3000"
+		}
+
+		path := os.Getenv("ARGOCD_MCP_HTTP_PATH")
+		if path == "" {
+			path = "/mcp"
+		}
+
+		logger.Infof("Starting MCP Streamable HTTP server on %s%s", addr, path)
+
+		httpServer := server.NewStreamableHTTPServer(
+			srv,
+			server.WithEndpointPath(path),
+		)
+
+		if err := httpServer.Start(addr); err != nil {
+			return fmt.Errorf("streamable http server error: %w", err)
+		}
+
 	default:
 		logger.Infof("Unknown endpoint %s, using stdio", endpoint)
 		if err := server.ServeStdio(srv); err != nil {
-			return fmt.Errorf("server error: %w", err)
+			return fmt.Errorf("stdio server error: %w", err)
 		}
 	}
 

@@ -159,9 +159,7 @@ export ARGOCD_MCP_ARGOCD_TOKEN="your-token"
 
 | Tool | Description |
 |------|-------------|
-| `diagnose_application` |
 | `get_logs with previous container support` |
-| `analyze_resource_efficiency` |
 | `summarize_applications_by_project` |
 
 

@@ -19,5 +19,7 @@ RUN apk add --no-cache ca-certificates
 
 COPY --from=builder /argocd-mcp /usr/local/bin/argocd-mcp
 
+EXPOSE 3000
+
 ENTRYPOINT ["argocd-mcp"]
 CMD ["serve"]
